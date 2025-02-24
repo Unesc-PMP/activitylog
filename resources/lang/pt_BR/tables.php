@@ -1,3 +1,4 @@
+
 <?php
 
 return [
@@ -25,7 +26,9 @@ return [
         'created_at' => [
             'label'         => 'Criado em',
             'created_from'  => 'Criado a partir de ',
+            'created_from_indicator'  => 'Criado  : :created_from',
             'created_until' => 'Criado até ',
+            'created_until_indicator' => 'Criado until  : :created_from',
         ],
         'event' => [
             'label' => 'Eventos',

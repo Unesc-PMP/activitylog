@@ -9,6 +9,7 @@ use Filament\Infolists\Components\Entry;
 use Filament\Support\Concerns\HasExtraAttributes;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Rmsramos\Activitylog\ActivitylogPlugin;
 use Rmsramos\Activitylog\Infolists\Concerns\HasModifyState;
 
 class TimeLineTitleEntry extends Entry
@@ -62,13 +63,13 @@ class TimeLineTitleEntry extends Entry
                 $update_at  = Carbon::parse($state['update'])->translatedFormat(config('filament-activitylog.datetime_format'));
 
                 return new HtmlString(
-                    sprintf(
-                        'The <strong>%s</strong> was <strong>%s</strong> by <strong>%s</strong>. <br><small> Updated at: <strong>%s</strong></small>',
-                        $className,
-                        $state['event'],
-                        $causerName,
-                        $update_at
-                    )
+                    __("activitylog::infolists.components.created_by_at",
+                        [
+                            "subject" => ActivitylogPlugin::get()->getTranslateSubject($className), 
+                            "event"=>__("activitylog::action.event.".$state['event']), 
+                            "causer"=>$causerName, 
+                            "update_at"=>$update_at
+                        ]),
                 );
             }
         }

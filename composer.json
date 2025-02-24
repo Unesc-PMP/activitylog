@@ -1,12 +1,12 @@
 {
-    "name": "rmsramos/activitylog",
+    "name": "burigooth/activitylog",
     "description": "This is my package activitylog",
     "keywords": [
         "Rmsramos",
         "laravel",
         "activitylog"
     ],
-    "homepage": "https://github.com/rmsramos/activitylog",
+    "homepage": "https://github.com/burigooth/activitylog",
     "license": "MIT",
     "authors": [
         {

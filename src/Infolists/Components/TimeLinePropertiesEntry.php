@@ -3,7 +3,6 @@ namespace Rmsramos\Activitylog\Infolists\Components;
 use Filament\Infolists\Components\Entry;
 use Illuminate\Support\HtmlString;
 use Rmsramos\Activitylog\Infolists\Concerns\HasModifyState;
-
 class TimeLinePropertiesEntry extends Entry
 {
     use HasModifyState;

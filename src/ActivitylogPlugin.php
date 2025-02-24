@@ -2,6 +2,7 @@
 
 namespace Rmsramos\Activitylog;
 
+use Carbon\Carbon;
 use Closure;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -15,9 +16,25 @@ class ActivitylogPlugin implements Plugin
 
     protected string|Closure|null $label = null;
 
-    protected Closure|bool $navigationItem = true;
+    protected string|Closure|null $resourceActionLabel = null;
+
+    protected bool|Closure|null $isResourceActionHidden = null;
+
+    protected bool|Closure|null $isRestoreActionHidden = null;
 
     protected string|Closure|null $navigationGroup = null;
+
+    protected string|Closure|null $dateParser = null;
+
+    protected string|Closure|null $dateFormat = null;
+
+    protected string|Closure|null $datetimeFormat = null;
+
+    protected ?Closure $datetimeColumnCallback = null;
+
+    protected ?Closure $datePickerCallback = null;
+
+    protected Closure|null $translateSubject = null;
 
     protected ?string $navigationIcon = null;
 
@@ -67,14 +84,58 @@ class ActivitylogPlugin implements Plugin
         return $this->evaluate($this->label) ?? config('filament-activitylog.resources.label');
     }
 
+    public function getResourceActionLabel(): string
+    {
+        return $this->evaluate($this->resourceActionLabel) ?? config('filament-activitylog.resources.resource_action_label');
+    }
+
+    public function getIsResourceActionHidden(): bool
+    {
+        return $this->evaluate($this->isResourceActionHidden) ?? config('filament-activitylog.resources.hide_resource_action');
+    }
+
+    public function getIsRestoreActionHidden(): bool
+    {
+        return $this->evaluate($this->isRestoreActionHidden) ?? config('filament-activitylog.resources.hide_restore_action');
+    }
+
     public function getPluralLabel(): string
     {
         return $this->evaluate($this->pluralLabel) ?? config('filament-activitylog.resources.plural_label');
     }
 
-    public function getNavigationItem(): bool
+    public function getDateFormat(): ?string
     {
-        return $this->evaluate($this->navigationItem) ?? config('filament-activitylog.resources.navigation_item');
+        return $this->evaluate($this->dateFormat) ?? config('filament-activitylog.date_format');
+    }
+
+    public function getDatetimeFormat(): ?string
+    {
+        return $this->evaluate($this->datetimeFormat) ?? config('filament-activitylog.datetime_format');
+    }
+
+    public function getDatetimeColumnCallback(): ?Closure
+    {
+        return $this->datetimeColumnCallback;
+    }
+
+    public function getDatePickerCallback(): ?Closure
+    {
+        return $this->datePickerCallback;
+    }
+
+    public function getTranslateSubject($label): ?string
+    {
+        if(is_null($this->translateSubject))
+            return $label;
+
+        $callable = $this->translateSubject;
+        return $callable($label);
+    }
+
+    public function getDateParser(): ?Closure
+    { 
+        return $this->dateParser ?? fn($date) => Carbon::parse($date);
     }
 
     public function getNavigationGroup(): ?string
@@ -111,6 +172,27 @@ class ActivitylogPlugin implements Plugin
         return $this;
     }
 
+    public function resourceActionLabel(string|Closure $label): static
+    {
+        $this->resourceActionLabel = $label;
+
+        return $this;
+    }
+
+    public function isResourceActionHidden(bool|Closure $isHidden): static
+    {
+        $this->isResourceActionHidden = $isHidden;
+
+        return $this;
+    }
+
+    public function isRestoreActionHidden(bool|Closure $isHidden): static
+    {
+        $this->isRestoreActionHidden = $isHidden;
+
+        return $this;
+    }
+
     public function pluralLabel(string|Closure $label): static
     {
         $this->pluralLabel = $label;
@@ -118,16 +200,49 @@ class ActivitylogPlugin implements Plugin
         return $this;
     }
 
-    public function navigationItem(Closure|bool $value = true): static
+    public function navigationGroup(string|Closure|null $group = null): static
     {
-        $this->navigationItem = $value;
+        $this->navigationGroup = $group;
 
         return $this;
     }
 
-    public function navigationGroup(string|Closure|null $group = null): static
+    public function dateParser(Closure|null $parser = null): static
     {
-        $this->navigationGroup = $group;
+        $this->dateParser = $parser;
+
+        return $this;
+    }
+
+    public function dateFormat(string|Closure|null $format = null): static
+    {
+        $this->dateFormat = $format;
+
+        return $this;
+    }
+
+    public function datetimeFormat(string|Closure|null $format = null): static
+    {
+        $this->datetimeFormat = $format;
+
+        return $this;
+    }
+
+    public function customizeDatetimeColumn(Closure $callable): self
+    {
+        $this->datetimeColumnCallback = $callable;
+        return $this;
+    }
+
+    public function customizeDatePicker(Closure $callable): self
+    {
+        $this->datePickerCallback = $callable;
+        return $this;
+    }
+
+    public function translateSubject(string|Closure|null $callable = null): static
+    {
+        $this->translateSubject = $callable;
 
         return $this;
     }

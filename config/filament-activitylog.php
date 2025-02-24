@@ -4,7 +4,10 @@ return [
     'resources' => [
         'label'                  => 'Activity Log',
         'plural_label'           => 'Activity Logs',
-        'navigation_item'        => true,
+        'hide_restore_action'    => false,
+        'restore_action_label'   => 'Restore',
+        'hide_resource_action'   => false,
+        'resource_action_label'  => 'View',
         'navigation_group'       => null,
         'navigation_icon'        => 'heroicon-o-shield-check',
         'navigation_sort'        => null,
@@ -13,5 +16,6 @@ return [
         'navigation_count_badge' => false,
         'resource'               => \Rmsramos\Activitylog\Resources\ActivitylogResource::class,
     ],
-    'datetime_format' => 'd/m/Y H:i:s',
+    'date_format'       => 'd/m/Y',
+    'datetime_format'   => 'd/m/Y H:i:s',
 ];

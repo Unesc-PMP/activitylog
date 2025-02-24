@@ -11,6 +11,7 @@ use Filament\Infolists\Infolist;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
+use Rmsramos\Activitylog\ActivitylogPlugin;
 use Rmsramos\Activitylog\Infolists\Components\TimeLineIconEntry;
 use Rmsramos\Activitylog\Infolists\Components\TimeLinePropertiesEntry;
 use Rmsramos\Activitylog\Infolists\Components\TimeLineRepeatableEntry;
@@ -21,10 +22,19 @@ trait ActionContent
 {
     private ?array $withRelations = null;
 
-    private ?array $timelineIcons = null;
+    private ?array $timelineIcons = [
+        'created' => 'heroicon-m-plus',
+        'updated' => 'heroicon-m-pencil-square',
+        'deleted' => 'heroicon-m-trash',
+        'restored' => 'heroicon-m-arrow-uturn-left',
+    ];
 
-    private ?array $timelineIconColors = null;
-
+    private ?array $timelineIconColors = [
+        'created'  => 'success',
+        'updated'  => 'warning',
+        'deleted'  => 'danger',
+        'restored' => 'info',
+    ];
     private ?int $limit = 10;
 
     protected Closure $modifyQueryUsing;
@@ -253,7 +263,7 @@ trait ActionContent
             'subject'     => $activity->subject,
             'event'       => $activity->event,
             'causer'      => $activity->causer,
-            'properties'  => $this->formatDateValues(json_decode($activity->properties, true)),
+            'properties'  => json_decode($activity->properties, true),
             'batch_uuid'  => $activity->batch_uuid,
             'update'      => $activity->updated_at,
         ];
@@ -264,18 +274,24 @@ trait ActionContent
         if (is_null($value)) {
             return $value;
         }
-
         if (is_array($value)) {
             foreach ($value as &$item) {
                 $item = self::formatDateValues($item);
             }
+            return $value;
+        }
 
+        if (is_numeric($value)) {
             return $value;
         }
 
         try {
             return Carbon::parse($value)
                 ->format(config('filament-activitylog.datetime_format', 'd/m/Y H:i:s'));
+            $parser = ActivitylogPlugin::get()->getDateParser();
+
+            return $parser($value)
+                ->format(ActivitylogPlugin::get()->getDatetimeFormat());
         } catch (InvalidFormatException $e) {
             return $value;
         }

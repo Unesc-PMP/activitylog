@@ -245,19 +245,43 @@ class ActivitylogResource extends Resource
                         if ($properties->count()) {
                             $schema[] = KeyValue::make('properties')
                                 ->label(__('activitylog::forms.fields.properties.label'))
-                                ->columnSpan('full');
+                                ->keyLabel(fn (string $key): string => 
+                                trans('activitylog::properties.' . $key) 
+                                ?: Str::headline($key))
+                            ->valueLabel(fn (mixed $state): string => 
+                                is_scalar($state)
+                                  ? (trans('activitylog::values.' . $state) ?: (string)$state)
+                                  : json_encode($state, JSON_UNESCAPED_UNICODE)
+                            )
+                            ->columnSpan('full');
                         }
 
                         if ($old = $record->properties->get('old')) {
                             $schema[] = KeyValue::make('old')
                                 ->afterStateHydrated(fn (KeyValue $component) => $component->state($old))
+                                ->keyLabel(fn (string $key): string => 
+                                trans('activitylog::properties.' . $key) 
+                                ?: Str::headline($key))
+                                ->valueLabel(fn (mixed $state): string => 
+                                    is_scalar($state)
+                                    ? (trans('activitylog::values.' . $state) ?: (string)$state)
+                                    : json_encode($state, JSON_UNESCAPED_UNICODE)
+                                )
                                 ->label(__('activitylog::forms.fields.old.label'));
                         }
 
                         if ($attributes = $record->properties->get('attributes')) {
                             $schema[] = KeyValue::make('attributes')
                                 ->afterStateHydrated(fn (KeyValue $component) => $component->state($attributes))
-                                ->label(__('activitylog::forms.fields.attributes.label'));
+                                ->keyLabel(fn (string $key): string => 
+                                trans('activitylog::properties.' . $key) 
+                                ?: Str::headline($key))
+                            ->valueLabel(fn (mixed $state): string => 
+                                is_scalar($state)
+                                  ? (trans('activitylog::values.' . $state) ?: (string)$state)
+                                  : json_encode($state, JSON_UNESCAPED_UNICODE)
+                            )
+                            ->label(__('activitylog::forms.fields.attributes.label'));
                         }
 
                         return $schema;

@@ -6,6 +6,7 @@ use Filament\Infolists\Components\Entry;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
+use Carbon\Carbon;
 use Rmsramos\Activitylog\Infolists\Concerns\HasModifyState;
 
 class TimeLinePropertiesEntry extends Entry
@@ -38,7 +39,7 @@ class TimeLinePropertiesEntry extends Entry
             return new HtmlString(
                 trans('activitylog::infolists.components.updater_updated', [
                     'causer'  => $causerName,
-                    'event'   => trans("activitylog::action.event.{$state['event']}"),
+                    'event'   => trans("activitylog::action.event.{$state['event']}}"),
                     'changes' => implode('<br>', $changes),
                 ])
             );
@@ -66,7 +67,6 @@ class TimeLinePropertiesEntry extends Entry
 
         foreach ($newValues as $key => $rawNew) {
             $rawOld = $oldValues[$key] ?? null;
-
             $keyLabel = Lang::has("activitylog::properties.{$key}")
                 ? trans("activitylog::properties.{$key}")
                 : Str::headline($key);
@@ -75,32 +75,33 @@ class TimeLinePropertiesEntry extends Entry
                 $items = array_map(fn($item) =>
                     Lang::has("activitylog::values.{$item}")
                         ? trans("activitylog::values.{$item}")
-                        : $item,
+                        : $this->formatNewValue($item),
                     $rawOld
                 );
                 $oldDisplay = implode(', ', $items);
             } else {
-                $oldDisplay = is_scalar($rawOld) && Lang::has("activitylog::values.{$rawOld}")
-                    ? trans("activitylog::values.{$rawOld}")
-                    : $rawOld;
+                $formattedOld = $this->formatNewValue($rawOld);
+                $oldDisplay = Lang::has("activitylog::values.{$formattedOld}")
+                    ? trans("activitylog::values.{$formattedOld}")
+                    : $formattedOld;
             }
 
             if (is_array($rawNew)) {
                 $items = array_map(fn($item) =>
                     Lang::has("activitylog::values.{$item}")
                         ? trans("activitylog::values.{$item}")
-                        : $item,
+                        : $this->formatNewValue($item),
                     $rawNew
                 );
                 $newDisplay = implode(', ', $items);
             } else {
-                $formatted = $this->formatNewValue($rawNew);
-                $newDisplay = is_scalar($formatted) && Lang::has("activitylog::values.{$formatted}")
-                    ? trans("activitylog::values.{$formatted}")
-                    : $formatted;
+                $formattedNew = $this->formatNewValue($rawNew);
+                $newDisplay = Lang::has("activitylog::values.{$formattedNew}")
+                    ? trans("activitylog::values.{$formattedNew}")
+                    : $formattedNew;
             }
 
-            if ($rawOld !== null && $rawOld != (is_array($rawNew) ? $rawNew : $formatted)) {
+            if ($rawOld !== null && $rawOld != (is_array($rawNew) ? $rawNew : $formattedNew)) {
                 $changes[] = trans('activitylog::infolists.components.from_oldvalue_to_newvalue', [
                     'key'       => $keyLabel,
                     'old_value' => htmlspecialchars($oldDisplay),
@@ -129,13 +130,13 @@ class TimeLinePropertiesEntry extends Entry
                     $items = array_map(fn($item) =>
                         Lang::has("activitylog::values.{$item}")
                             ? trans("activitylog::values.{$item}")
-                            : $item,
+                            : $this->formatNewValue($item),
                         $value
                     );
                     $display = implode(', ', $items);
                 } else {
                     $formatted = $this->formatNewValue($value);
-                    $display = is_scalar($formatted) && Lang::has("activitylog::values.{$formatted}")
+                    $display = Lang::has("activitylog::values.{$formatted}")
                         ? trans("activitylog::values.{$formatted}")
                         : $formatted;
                 }
@@ -149,8 +150,19 @@ class TimeLinePropertiesEntry extends Entry
 
     private function formatNewValue($value): string
     {
-        return is_array($value)
-            ? json_encode($value, JSON_UNESCAPED_UNICODE)
-            : ((string) $value ?: '—');
+        if (is_array($value)) {
+            return json_encode($value, JSON_UNESCAPED_UNICODE);
+        }
+
+        $string = (string) ($value ?? '');
+
+        try {
+            $dt = Carbon::parse($string);
+            $format = preg_match('/\d{2}:\d{2}:\d{2}/', $string) ? 'd/m/Y H:i:s' : 'd/m/Y';
+            return $dt->format($format);
+        } catch (\Exception $e) {
+        }
+
+        return $string !== '' ? $string : '—';
     }
 }

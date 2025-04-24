@@ -16,19 +16,19 @@ class TimeLinePropertiesEntry extends Entry
     {
         $this
             ->hiddenLabel()
-            ->modifyState(fn ($state) => $this->modifiedProperties($state));
+            ->modifyState(fn($state) => $this->modifiedProperties($state));
     }
     private function modifiedProperties($state): ?HtmlString
     {
         $properties = $state['properties'];
-        if (! empty($properties)) {
-            $changes    = $this->getPropertyChanges($properties);
+        if (!empty($properties)) {
+            $changes = $this->getPropertyChanges($properties);
             $causerName = $this->getCauserName($state['causer']);
 
-            return new HtmlString(trans("activitylog::infolists.components.updater_updated",[
-                "causer"    =>  $causerName, 
-                "event"     =>  __("activitylog::action.event.".$state['event']), 
-                "changes"   =>  implode('<br>', $changes)
+            return new HtmlString(trans("activitylog::infolists.components.updater_updated", [
+                "causer" => $causerName,
+                "event" => __("activitylog::action.event." . $state['event']),
+                "changes" => implode('<br>', $changes)
             ]));
         }
 
@@ -50,20 +50,29 @@ class TimeLinePropertiesEntry extends Entry
         foreach ($newValues as $key => $newValue) {
             $oldValue = is_array($oldValues[$key]) ? json_encode($oldValues[$key]) : $oldValues[$key] ?? '-';
             $newValue = $this->formatNewValue($newValue);
+            $keyLabel = trans('activitylog::properties.' . $key) !== 'activitylog::properties.' . $key
+                ? trans('activitylog::properties.' . $key)
+                : \Illuminate\Support\Str::headline($key);
+
 
             if (isset($oldValues[$key]) && $oldValues[$key] != $newValue) {
-                $changes[] = trans("activitylog::infolists.components.from_oldvalue_to_newvalue", 
+                $changes[] = trans(
+                    "activitylog::infolists.components.from_oldvalue_to_newvalue",
                     [
-                        "key"       =>  $key,  
-                        "old_value" =>  htmlspecialchars($oldValue), 
-                        "new_value" =>  htmlspecialchars($newValue) 
-                    ]);
+                        "key" => $keyLabel,
+                        "old_value" => htmlspecialchars($oldValue),
+                        "new_value" => htmlspecialchars($newValue),
+                    ]
+                );
             } else {
-                $changes[] = trans("activitylog::infolists.components.to_newvalue", 
+                $changes[] = trans(
+                    "activitylog::infolists.components.to_newvalue",
                     [
-                        "key"       =>  $key, 
-                        "new_value" =>  htmlspecialchars($newValue) 
-                    ]);
+                        "key" => $keyLabel,
+                        "new_value" => htmlspecialchars($newValue),
+                    ]
+                );
+
             }
         }
 
@@ -71,8 +80,19 @@ class TimeLinePropertiesEntry extends Entry
     }
     private function getNewValues(array $newValues): array
     {
-        return array_map(fn ($key, $value) => "- {$key} <strong>" . htmlspecialchars($this->formatNewValue($value)) . '</strong>', array_keys($newValues), $newValues);
+        return array_map(
+            fn($key, $value) => sprintf(
+                '- %s <strong>%s</strong>',
+                trans('activitylog::properties.' . $key) !== 'activitylog::properties.' . $key
+                ? trans('activitylog::properties.' . $key)
+                : \Illuminate\Support\Str::headline($key),
+                htmlspecialchars($this->formatNewValue($value))
+            ),
+            array_keys($newValues),
+            $newValues
+        );
     }
+
     private function formatNewValue($value): string
     {
         return is_array($value) ? json_encode($value) : $value ?? '—';

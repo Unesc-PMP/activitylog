@@ -1,10 +1,17 @@
 <div class="my-2 text-sm tracking-tight">
-    @foreach($getState() as $key => $value)
-        <span class="inline-block p-1 mr-1 font-medium text-gray-700 whitespace-normal rounded-md dark:text-gray-200 bg-gray-500/10">
-            {{ $key }}
+    @foreach ($getState() as $key => $value)
+        @php
+            $label =
+                trans('activitylog::properties.' . $key) !== 'activitylog::properties.' . $key
+                    ? trans('activitylog::properties.' . $key)
+                    : \Illuminate\Support\Str::headline($key);
+        @endphp
+
+        <span class="inline-block p-1 mr-1 font-medium text-gray-700 ... rounded-md bg-gray-500/10">
+            {{ $label }}
         </span>
 
-        @if(is_array($value))
+        @if (is_array($value))
             <span class="whitespace-normal divide-x divide-gray-200 divide-solid dark:divide-gray-700">
                 @foreach ($value as $nestedKey => $nestedValue)
                     <span class="inline-block mr-1">
@@ -13,7 +20,14 @@
                 @endforeach
             </span>
         @else
-            <span class="whitespace-normal">{{ $value }}</span>
+            @php
+                $display = is_scalar($value)
+                    ? (trans('activitylog::values.' . $value) !== 'activitylog::values.' . $value
+                        ? trans('activitylog::values.' . $value)
+                        : $value)
+                    : json_encode($value, JSON_UNESCAPED_UNICODE);
+            @endphp
+            <span class="whitespace-normal">{{ $display }}</span>
         @endif
     @endforeach
 </div>

@@ -118,9 +118,6 @@ trait ActionContent
                         ->configureTitleUsing($this->modifyTitleUsing)
                         ->shouldConfigureTitleUsing($this->shouldModifyTitleUsing),
                     TimeLinePropertiesEntry::make('activityData'),
-                    TextEntry::make('log_name')
-                        ->hiddenLabel()
-                        ->badge(),
                     TextEntry::make('updated_at')
                         ->hiddenLabel()
                         ->since()

@@ -28,10 +28,12 @@ class TimeLinePropertiesEntry extends Entry
             ->modifyState(fn($state) => $this->modifiedProperties($state));
     }
 
-    private function modifiedProperties($state): ?HtmlString
+    private function modifiedProperties(array $state): ?HtmlString
     {
-        $properties = array_filter(
-            $state['properties'] ?? [],
+        $attributes = $state['properties']['attributes'] ?? [];
+    
+        $filled = array_filter(
+            $attributes,
             fn($v) => ! (
                  $v === null
               || $v === ''
@@ -39,22 +41,19 @@ class TimeLinePropertiesEntry extends Entry
             )
         );
     
-        if (count($properties) === 0) {
+        if (count($filled) === 0) {
             return null;
         }
     
-        $changes    = $this->getPropertyChanges($properties);
+        $changes    = $this->getPropertyChanges($filled);
         $causerName = $this->getCauserName($state['causer'] ?? null);
     
-        return new HtmlString(
-            trans('activitylog::infolists.components.updater_updated', [
-                'causer'  => $causerName,
-                'event'   => trans('activitylog::action.event.' . $state['event']),
-                'changes' => implode('<br>', $changes),
-            ])
-        );
-    }
-    
+        return new HtmlString(trans('activitylog::infolists.components.updater_updated', [
+            'causer'  => $causerName,
+            'event'   => trans('activitylog::action.event.'.$state['event']),
+            'changes' => implode('<br>', $changes),
+        ]));
+    }    
 
     private function getPropertyChanges(array $properties): array
     {

@@ -313,6 +313,7 @@ class ActivitylogResource extends Resource
             ->label(__('activitylog::tables.columns.log_name.label'))
             ->badge()
             ->formatStateUsing(fn ($state) => ucwords(__("activitylog::action.event.".$state)))
+            ->hidden()
             ->sortable();
     }
 

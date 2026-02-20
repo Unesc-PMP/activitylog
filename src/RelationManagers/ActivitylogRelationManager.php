@@ -2,9 +2,9 @@
 
 namespace Rmsramos\Activitylog\RelationManagers;
 
-use Filament\Forms\Form;
+use Filament\Actions\ViewAction as ActionsViewAction;
 use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables\Actions\ViewAction;
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
 use Rmsramos\Activitylog\ActivitylogPlugin;
@@ -24,9 +24,9 @@ class ActivitylogRelationManager extends RelationManager
             ->headline();
     }
 
-    public function form(Form $form): Form
+    public function infolist(Schema $schema): Schema
     {
-        return ActivitylogResource::form($form);
+        return ActivitylogResource::infolist($schema);
     }
 
     public function table(Table $table): Table
@@ -34,8 +34,8 @@ class ActivitylogRelationManager extends RelationManager
         return ActivitylogResource::table(
             $table
                 ->heading(ActivitylogPlugin::get()->getPluralLabel())
-                ->actions([
-                    ViewAction::make(),
+                ->recordActions([
+                    ActionsViewAction::make(),
                 ])
         );
     }

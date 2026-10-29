@@ -2,12 +2,10 @@
 
 namespace Rmsramos\Activitylog\Actions\Concerns;
 
-use Carbon\Carbon;
 use Carbon\Exceptions\InvalidFormatException;
 use Closure;
-use Filament\Actions\StaticAction;
 use Filament\Infolists\Components\TextEntry;
-use Filament\Infolists\Infolist;
+use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -86,10 +84,10 @@ trait ActionContent
 
     private function configureInfolist(): void
     {
-        $this->infolist(function (?Model $record, Infolist $infolist) {
-            return $infolist
+        $this->schema(function (?Model $record, Schema $schema) {
+            return $schema
                 ->state(['activities' => $this->getActivityLogRecord($record, $this->getWithRelations())])
-                ->schema($this->getSchema());
+                ->schema($this->buildSchema());
         });
     }
 
@@ -102,7 +100,7 @@ trait ActionContent
             ->icon('heroicon-o-bell-alert');
     }
 
-    private function getSchema(): array
+    private function buildSchema(): array
     {
         return [
             TimeLineRepeatableEntry::make('activities')
@@ -126,7 +124,7 @@ trait ActionContent
         ];
     }
 
-    public function withRelations(?array $relations = null): ?StaticAction
+    public function withRelations(?array $relations = null): static
     {
         $this->withRelations = $relations;
 
@@ -138,7 +136,7 @@ trait ActionContent
         return $this->evaluate($this->withRelations);
     }
 
-    public function timelineIcons(?array $timelineIcons = null): ?StaticAction
+    public function timelineIcons(?array $timelineIcons = null): static
     {
         $this->timelineIcons = $timelineIcons;
 
@@ -150,7 +148,7 @@ trait ActionContent
         return $this->evaluate($this->timelineIcons);
     }
 
-    public function timelineIconColors(?array $timelineIconColors = null): ?StaticAction
+    public function timelineIconColors(?array $timelineIconColors = null): static
     {
         $this->timelineIconColors = $timelineIconColors;
 
@@ -162,7 +160,7 @@ trait ActionContent
         return $this->evaluate($this->timelineIconColors);
     }
 
-    public function limit(?int $limit = 10): ?StaticAction
+    public function limit(?int $limit = 10): static
     {
         $this->limit = $limit;
 
@@ -283,8 +281,6 @@ trait ActionContent
         }
 
         try {
-            return Carbon::parse($value)
-                ->format(config('filament-activitylog.datetime_format', 'd/m/Y H:i:s'));
             $parser = ActivitylogPlugin::get()->getDateParser();
 
             return $parser($value)

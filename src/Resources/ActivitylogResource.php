@@ -3,15 +3,10 @@
 namespace Rmsramos\Activitylog\Resources;
 
 use Exception;
+use Filament\Actions\Action;
 use Filament\Facades\Filament;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\KeyValue;
-use Filament\Forms\Components\Placeholder;
-use Filament\Forms\Components\Section;
-use Filament\Forms\Components\Split;
-use Filament\Forms\Components\Textarea;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Columns\Column;
 use Filament\Tables\Columns\TextColumn;
@@ -31,8 +26,13 @@ use Rmsramos\Activitylog\RelationManagers\ActivitylogRelationManager;
 use Rmsramos\Activitylog\Resources\ActivitylogResource\Pages\ListActivitylog;
 use Rmsramos\Activitylog\Resources\ActivitylogResource\Pages\ViewActivitylog;
 use Spatie\Activitylog\Models\Activity;
-use Filament\Forms\Components\Actions\Action;
+use Filament\Infolists\Components\TextEntry as InfolistTextEntry;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Schema;
 use Rmsramos\Activitylog\Helpers\ActivityLogHelper;
 use Rmsramos\Activitylog\Traits\HasCustomActivityResource;
 
@@ -163,11 +163,12 @@ class ActivitylogResource extends Resource
         return false;
     }
 
-    public static function form(Form $form): Form
+    public static function infolist(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Split::make([
+        return $schema
+            ->components([
+                Grid::make(['md' => 2])
+                    ->schema([
                     Section::make([
                         TextInput::make('causer_id')
                             ->afterStateHydrated(function ($component, ?Model $record) {
@@ -189,23 +190,23 @@ class ActivitylogResource extends Resource
                             ->columnSpan('full'),
                     ]),
                     Section::make([
-                        Placeholder::make('log_name')
-                            ->content(function (?Model $record): string {
+                        InfolistTextEntry::make('log_name')
+                            ->state(function (?Model $record): string {
                                 /** @var Activity&ActivityModel $record */
                                 return $record->log_name ? ucwords($record->log_name) : '-';
                             })
                             ->label(__('activitylog::forms.fields.log_name.label')),
 
-                        Placeholder::make('event')
-                            ->content(function (?Model $record): string {
+                        InfolistTextEntry::make('event')
+                            ->state(function (?Model $record): string {
                                 /** @phpstan-ignore-next-line */
                                 return $record?->event ? ucwords(__('activitylog::action.event.'.$record?->event)) : '-';
                                 })
                             ->label(__('activitylog::forms.fields.event.label')),
 
-                        Placeholder::make('created_at')
+                        InfolistTextEntry::make('created_at')
                             ->label(__('activitylog::forms.fields.created_at.label'))
-                            ->content(function (?Model $record): string {
+                            ->state(function (?Model $record): string {
                                 /** @var Activity&ActivityModel $record */
                                 $parser = ActivitylogPlugin::get()->getDateParser();
 
@@ -215,7 +216,7 @@ class ActivitylogResource extends Resource
                                     : '-';
                                     }),
                     ])->grow(false),
-                ])->from('md'),
+                    ]),
 
                 Section::make(__('activitylog::forms.changes'))
                     ->headerActions([
@@ -412,7 +413,7 @@ class ActivitylogResource extends Resource
 
                 return $indicators;
             })
-            ->form([
+            ->schema([
                 self::getDatePickerCompoment('created_from'),
                 self::getDatePickerCompoment('created_until'),
             ])
